@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PMP Cheatsheet · Layered Cake Study Sheet</title>
+    <!-- Font Awesome 6 (free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        /* ----- Global reset & base ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            background: #f4f7fb;
+            color: #1e2a3a;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            padding: 24px 28px 40px;
+        }
+
+        /* ----- Header ----- */
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 18px;
+            border-bottom: 2px solid #e9edf4;
+            margin-bottom: 22px;
+        }
+        .header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header h1 i {
+            color: #2a6f97;
+            font-size: 28px;
+        }
+        .header .badge {
+            background: #eef3fa;
+            color: #2a4b6e;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .header .badge i {
+            margin-right: 6px;
+        }
+
+        /* ----- Search bar ----- */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f0f4fa;
+            border-radius: 40px;
+            padding: 6px 18px 6px 22px;
+            margin-bottom: 24px;
+            border: 1px solid #dce3ec;
+            transition: 0.2s;
+        }
+        .search-bar:focus-within {
+            border-color: #2a6f97;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(42, 111, 151, 0.15);
+        }
+        .search-bar i {
+            color: #6f7f94;
+            font-size: 16px;
+        }
+        .search-bar input {
+            border: none;
+            background: transparent;
+            padding: 10px 0;
+            font-size: 15px;
+            width: 100%;
+            outline: none;
+            color: #1e2a3a;
+        }
+        .search-bar input::placeholder {
+            color: #8a9bb0;
+        }
+        .search-bar .clear-btn {
+            background: none;
+            border: none;
+            color: #8a9bb0;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px 6px;
+            display: none;
+        }
+        .search-bar .clear-btn.visible {
+            display: block;
+        }
+
+        /* ----- Tab navigation ----- */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 26px;
+            border-bottom: 2px solid #e9edf4;
+            padding-bottom: 2px;
+        }
+        .tabs button {
+            background: transparent;
+            border: none;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #5d6f83;
+            cursor: pointer;
+            border-radius: 30px 30px 0 0;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+        .tabs button i {
+            font-size: 16px;
+        }
+        .tabs button:hover {
+            background: #eef3fa;
+            color: #1e2a3a;
+        }
+        .tabs button.active {
+            color: #1a4970;
+            background: #e4ecf5;
+        }
+        .tabs button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 20%;
+            right: 20%;
+            height: 3px;
+            background: #2a6f97;
+            border-radius: 4px;
+        }
+        .tab-count {
+            background: #dce3ec;
+            color: #2a4b6e;
+            border-radius: 30px;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .tabs button.active .tab-count {
+            background: #2a6f97;
+            color: #fff;
+        }
+
+        /* ----- Panels ----- */
+        .panel {
+            display: none;
+            animation: fadeUp 0.3s ease;
+        }
+        .panel.active {
+            display: block;
+        }
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ----- Process matrix table ----- */
+        .matrix-wrap {
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+        }
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 700px;
+        }
+        .matrix-table th {
+            background: #e9eff6;
+            color: #1e3a5a;
+            font-weight: 700;
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 2px solid #cbd5e1;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+        }
+        .matrix-table th:first-child {
+            text-align: left;
+            padding-left: 16px;
+            min-width: 130px;
+        }
+        .matrix-table td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: top;
+            text-align: center;
+        }
+        .matrix-table td:first-child {
+            text-align: left;
+            padding-left: 16px;
+            font-weight: 600;
+            color: #1a3a5a;
+            background: #f8faff;
+            border-right: 1px solid #e2e8f0;
+        }
+        .matrix-table .proc-item {
+            display: inline-block;
+            background: #eef3fa;
+            border-radius: 20px;
+            padding: 3px 12px;
+            margin: 2px 0;
+            font-size: 12px;
+            font-weight: 500;
+            color: #1a4a6a;
+            transition: 0.15s;
+            cursor: default;
+            border: 1px solid transparent;
+        }
+        .matrix-table .proc-item:hover {
+            background: #d4e2f0;
+            border-color: #8ab0cc;
+            transform: scale(1.02);
+        }
+        .matrix-table .proc-item.highlight {
+            background: #c7dff0;
+            border-color: #2a6f97;
+        }
+        .matrix-table .empty-cell {
+            color: #b0c0d0;
+            font-size: 13px;
+        }
+        .matrix-table tr:hover td {
+            background: #f8faff;
+        }
+        .matrix-table tr:hover td:first-child {
+            background: #eef4fc;
+        }
+
+        /* ----- Definition cards ----- */
+        .def-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 18px;
+        }
+        .def-card {
+            background: #f9fcff;
+            border-radius: 16px;
+            padding: 18px 20px 20px;
+            border: 1px solid #e2e8f0;
+            transition: 0.2s;
+        }
+        .def-card:hover {
+            border-color: #b6cddf;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+        .def-card .def-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #1a4970;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .def-card .def-title i {
+            color: #2a6f97;
+            font-size: 16px;
+            width: 20px;
+        }
+        .def-card .def-body {
+            font-size: 14px;
+            color: #2d4058;
+            line-height: 1.6;
+        }
+        .def-card .def-body ul {
+            padding-left: 20px;
+            margin: 6px 0 0;
+        }
+        .def-card .def-body ul li {
+            margin-bottom: 2px;
+        }
+
+        /* ----- General lists (Inputs / Tools / Outputs) ----- */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a3a5a;
+            margin: 28px 0 14px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title i {
+            color: #2a6f97;
+        }
+        .ka-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .ka-card {
+            background: #f9fcff;
+            border-radius: 14px;
+            padding: 14px 16px 16px;
+            border: 1px solid #e2e8f0;
+            transition: 0.2s;
+        }
+        .ka-card:hover {
+            border-color: #b6cddf;
+        }
+        .ka-card .ka-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: #1a4970;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ka-card .ka-name i {
+            color: #2a6f97;
+            font-size: 14px;
+        }
+        .ka-card .ka-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 6px;
+        }
+        .ka-card .ka-items .tag {
+            background: #eef3fa;
+            border-radius: 16px;
+            padding: 2px 12px;
+            font-size: 12px;
+            color: #1e3a5a;
+            border: 1px solid #dce3ec;
+            transition: 0.1s;
+        }
+        .ka-card .ka-items .tag:hover {
+            background: #dce8f2;
+            border-color: #8ab0cc;
+        }
+        .ka-card .ka-items .tag.empty-tag {
+            color: #a0b2c6;
+            font-style: italic;
+            background: transparent;
+            border-color: transparent;
+        }
+
+        /* ----- Empty state & messages ----- */
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6f7f94;
+        }
+        .no-results i {
+            font-size: 36px;
+            color: #bccad9;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 700px) {
+            .container {
+                padding: 16px 14px 28px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .header .badge {
+                font-size: 12px;
+                padding: 4px 12px;
+            }
+            .tabs button {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+            .tabs button i {
+                font-size: 14px;
+            }
+            .matrix-table {
+                font-size: 12px;
+                min-width: 550px;
+            }
+            .matrix-table th,
+            .matrix-table td {
+                padding: 6px 4px;
+            }
+            .matrix-table .proc-item {
+                font-size: 11px;
+                padding: 2px 8px;
+            }
+            .def-grid {
+                grid-template-columns: 1fr;
+            }
+            .ka-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 480px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .tabs {
+                gap: 2px;
+            }
+            .tabs button {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            .tabs button .tab-count {
+                font-size: 10px;
+                padding: 0 6px;
+            }
+        }
+
+        /* ----- Print optimization ----- */
+        @media print {
+            body {
+                background: #fff;
+                padding: 10px;
+            }
+            .container {
+                box-shadow: none;
+                padding: 10px;
+            }
+            .search-bar {
+                display: none;
+            }
+            .tabs button {
+                color: #000 !important;
+                background: #f0f0f0 !important;
+            }
+            .tabs button.active {
+                background: #d0d0d0 !important;
+            }
+            .tabs button.active::after {
+                display: none;
+            }
+            .panel {
+                display: block !important;
+            }
+            .panel:not(.active) {
+                display: none !important;
+            }
+            .matrix-table .proc-item:hover {
+                transform: none;
+            }
+            .ka-card:hover,
+            .def-card:hover {
+                border-color: #e2e8f0 !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app">
+
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-layer-group"></i>
+                PMP Layered Cake Cheatsheet
+            </h1>
+            <span class="badge">
+                <i class="fas fa-book-open"></i> Based on PMBOK 6th
+            </span>
+        </div>
+
+        <!-- Search -->
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="globalSearch" placeholder="Search processes, definitions, tools…" />
+            <button class="clear-btn" id="clearSearch" aria-label="Clear search">
+                <i class="fas fa-times-circle"></i>
+            </button>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tabs" id="tabNav">
+            <button class="active" data-tab="processes">
+                <i class="fas fa-table"></i> Process Matrix
+                <span class="tab-count" id="countProcesses">0</span>
+            </button>
+            <button data-tab="definitions">
+                <i class="fas fa-list-ul"></i> Definitions
+                <span class="tab-count" id="countDefinitions">0</span>
+            </button>
+            <button data-tab="inputs">
+                <i class="fas fa-arrow-right"></i> Inputs
+                <span class="tab-count" id="countInputs">0</span>
+            </button>
+            <button data-tab="tools">
+                <i class="fas fa-tools"></i> Tools & Techniques
+                <span class="tab-count" id="countTools">0</span>
+            </button>
+            <button data-tab="outputs">
+                <i class="fas fa-arrow-left"></i> Outputs
+                <span class="tab-count" id="countOutputs">0</span>
+            </button>
+        </div>
+
+        <!-- ======== Panel: Process Matrix ======== -->
+        <div class="panel active" id="panelProcesses">
+            <div class="matrix-wrap">
+                <table class="matrix-table" id="matrixTable">
+                    <thead>
+                        <tr>
+                            <th>Knowledge Area</th>
+                            <th>Initiating</th>
+                            <th>Planning</th>
+                            <th>Executing</th>
+                            <th>Monitoring & Controlling</th>
+                            <th>Closing</th>
+                        </tr>
+                    </thead>
+                    <tbody id="matrixBody">
+                        <!-- Rendered by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top:12px;font-size:13px;color:#6f7f94;">
+                <i class="fas fa-info-circle"></i> Hover for details · Click a process to highlight it.
+            </div>
+        </div>
+
+        <!-- ======== Panel: Definitions ======== -->
+        <div class="panel" id="panelDefinitions">
+            <div class="def-grid" id="definitionsGrid">
+                <!-- Rendered by JavaScript -->
+            </div>
+        </div>
+
+        <!-- ======== Panel: Inputs ======== -->
+        <div class="panel" id="panelInputs">
+            <div id="inputsContainer">
+                <!-- Rendered by JavaScript -->
+            </div>
+        </div>
+
+        <!-- ======== Panel: Tools & Techniques ======== -->
+        <div class="panel" id="panelTools">
+            <div id="toolsContainer">
+                <!-- Rendered by JavaScript -->
+            </div>
+        </div>
+
+        <!-- ======== Panel: Outputs ======== -->
+        <div class="panel" id="panelOutputs">
+            <div id="outputsContainer">
+                <!-- Rendered by JavaScript -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ================================================================
+        //  1. DATA
+        // ================================================================
+
+        // ---------- Process Matrix ----------
+        const processData = {
+            'Integration': {
+                'Initiating': ['Develop Project Charter'],
+                'Planning': ['Develop Project Management Plan'],
+                'Executing': ['Direct and Manage Project Work'],
+                'Monitoring & Controlling': ['Monitor and Control Project Work', 'Perform Integrated Change Control'],
+                'Closing': ['Close Project or Phase']
+            },
+            'Scope': {
+                'Initiating': [],
+                'Planning': ['Plan Scope Management', 'Collect Requirements', 'Define Scope', 'Create WBS'],
+                'Executing': [],
+                'Monitoring & Controlling': ['Validate Scope', 'Control Scope'],
+                'Closing': []
+            },
+            'Schedule': {
+                'Initiating': [],
+                'Planning': ['Plan Schedule Management', 'Define Activities', 'Sequence Activities', 'Estimate Activity Resources', 'Estimate Activity Durations', 'Develop Schedule'],
+                'Executing': [],
+                'Monitoring & Controlling': ['Control Schedule'],
+                'Closing': []
+            },
+            'Cost': {
+                'Initiating': [],
+                'Planning': ['Plan Cost Management', 'Estimate Costs', 'Determine Budget'],
+                'Executing': [],
+                'Monitoring & Controlling': ['Control Costs'],
+                'Closing': []
+            },
+            'Quality': {
+                'Initiating': [],
+                'Planning': ['Plan Quality Management'],
+                'Executing': ['Manage Quality'],
+                'Monitoring & Controlling': ['Control Quality'],
+                'Closing': []
+            },
+            'Resources': {
+                'Initiating': [],
+                'Planning': ['Plan Resource Management'],
+                'Executing': ['Acquire Resources', 'Develop Team', 'Manage Team'],
+                'Monitoring & Controlling': [],
+                'Closing': []
+            },
+            'Communications': {
+                'Initiating': [],
+                'Planning': ['Plan Communications Management'],
+                'Executing': ['Manage Communications'],
+                'Monitoring & Controlling': ['Monitor Communications'],
+                'Closing': []
+            },
+            'Risk': {
+                'Initiating': [],
+                'Planning': ['Plan Risk Management', 'Identify Risks', 'Perform Qualitative Risk Analysis', 'Perform Quantitative Risk Analysis', 'Plan Risk Responses'],
+                'Executing': [],
+                'Monitoring & Controlling': ['Monitor Risks'],
+                'Closing': []
+            },
+            'Procurement': {
+                'Initiating': [],
+                'Planning': ['Plan Procurement Management'],
+                'Executing': ['Conduct Procurements'],
+                'Monitoring & Controlling': ['Control Procurements'],
+                'Closing': ['Close Procurements']
+            },
+            'Stakeholder': {
+                'Initiating': ['Identify Stakeholders'],
+                'Planning': ['Plan Stakeholder Engagement'],
+                'Executing': ['Manage Stakeholder Engagement'],
+                'Monitoring & Controlling': ['Monitor Stakeholder Engagement'],
+                'Closing': []
+            }
+        };
+
+        // ---------- Definitions ----------
+        const definitions = [
+            { title: 'Initiating', icon: 'fa-play', text: 'Formally authorizes the project or phase. No charter, no project. Provides a high-level description of the product, service, or result.' },
+            { title: 'Planning', icon: 'fa-pen-fancy', text: 'Establishes plans to guide the work. Clarifies who does what, when, and where. Progressive elaboration, used to document subsidiary plans.' },
+            { title: 'Executing', icon: 'fa-cogs', text: 'This is where the work gets done! Creates deliverables that are reviewed by the customer.' },
+            { title: 'Monitoring & Controlling', icon: 'fa-chart-line', text: 'Do deliverables comply with the project plan? Track, review, and adjust performance to meet objectives. Assess impact of scope changes. Review, develop, and manage deliverables.' },
+            { title: 'Closing', icon: 'fa-check-double', text: 'Properly closes the project or phase. Reviews scope baseline to ensure completion. Finalizes all activities. Transfers project products to operations, production, or next phase.' },
+            { title: 'Integration Management', icon: 'fa-cubes', text: 'Focuses on the big picture, ensuring that project parts are coordinated. High-level perspective. Car body analogy – concept of tuning and retuning the band.' },
+            { title: 'Scope Management', icon: 'fa-bullseye', text: 'Logical process to understand scope and verify that the product is correct. Outlines all scope processes and plans. How scope will be delivered. Perform Integrated Change Control focuses on managing project scope changes, while Monitor and Control Project Work ensures that the product, service, or result matches scope. Formal acceptance of completed project deliverables.' },
+            { title: 'Schedule Management', icon: 'fa-clock', text: 'The project manager should control the schedule; schedule is derived from scope baseline and other information. The heart of project information. Primary tool for controlling project scope. Compares work results to plan. Ensures project performance matches plan. Schedule is managed continuously throughout the project life cycle.' },
+            { title: 'Cost Management', icon: 'fa-coins', text: 'Goal: complete project within approved budget. Requires continuous cost monitoring. Lifecycle cost: total cost of ownership from creation to disposal – analyzes the bigger cost picture. Value engineering: getting more value from the project in every possible way. Cost management should be done early and requires clear scope and WBS. Cost and scope are tightly linked.' },
+            { title: 'Quality Management', icon: 'fa-check-circle', text: 'Quality elements: 1) Customer satisfaction 2) Prevention over inspection 3) Continuous improvement or “Katzen” (just-in-time, “Katzen” performs quality assurance processes) 4) Management responsibility 5) Cost of quality – do it right the first time. Key terms: TQM; Katzen; JIT (kanban); ISO 9000; standard deviation; prevention.' },
+            { title: 'Resource Management', icon: 'fa-users', text: 'Defines roles for everyone on the project and clarifies each role’s responsibilities. Defines roles and responsibilities, staffing, managers, team building, evaluation, and improvement of the project team. Provides project staffing and ensures ongoing resource availability. The project manager must be a team leader, guiding the team to make the best contributions to the project. Builds team awareness and improves work performance.' },
+            { title: 'Communications Management', icon: 'fa-envelope', text: 'Covers all tasks related to generating, assembling, sending, storing, retiring, and managing project records. Develops communication methods based on stakeholder needs. Ongoing and periodic review.' },
+            { title: 'Risk Management', icon: 'fa-shield-alt', text: 'Risks are related to uncertain events. Identifies which risks have higher priority for the project (priority ranking). Assigns numbers to quantify risks, analyzing impact on project numerically. Iterative process, confirming that risks are properly planned. Tracks identified risks, identifies new risks, and ensures risk management effectiveness.' },
+            { title: 'Procurement Management', icon: 'fa-handshake', text: 'Formal process of obtaining goods, services, or scope from outside the organization. Identifies positive and negative risks and takes appropriate responses. Creates and documents plans to handle positive and negative risks. Determines which components or services will be performed internally and which will be outsourced. Selects sellers and service providers and awards procurement contracts.' },
+            { title: 'Stakeholder Management', icon: 'fa-user-friends', text: 'Identifies all stakeholders, plans how to engage them, manages their expectations, and monitors engagement effectiveness. Ensures stakeholder satisfaction.' }
+        ];
+
+        // ---------- Inputs ----------
+        const inputsData = {
+            'Integration': ['Project Charter', 'Project Management Plan', 'Approved Change Requests', 'Deliverables', 'Work Performance Data', 'Work Performance Reports', 'Organizational Process Assets', 'Enterprise Environmental Factors'],
+            'Scope': ['Project Charter', 'Requirements Documentation', 'Requirements Traceability Matrix', 'Scope Management Plan', 'Project Scope Statement', 'WBS', 'Scope Baseline'],
+            'Schedule': ['Project Management Plan', 'Project Charter', 'Schedule Management Plan', 'Scope Baseline', 'Activity List', 'Activity Attributes', 'Milestone List', 'Resource Calendars', 'Project Schedule'],
+            'Cost': ['Project Management Plan', 'Project Charter', 'Cost Management Plan', 'Scope Baseline', 'Project Schedule', 'Risk Register', 'Resource Requirements', 'Basis of Estimates'],
+            'Quality': ['Project Management Plan', 'Quality Metrics', 'Quality Checklists', 'Work Performance Data', 'Deliverables', 'Approved Change Requests'],
+            'Resources': ['Project Management Plan', 'Activity Resource Requirements', 'Human Resource Management Plan', 'Project Staff Assignments', 'Resource Calendars', 'Issue Log'],
+            'Communications': ['Project Management Plan', 'Stakeholder Register', 'Communications Management Plan', 'Work Performance Reports', 'Project Communications'],
+            'Risk': ['Project Management Plan', 'Project Charter', 'Risk Register', 'Risk Report', 'Stakeholder Register', 'Procurement SOW'],
+            'Procurement': ['Requirements Documentation', 'Risk Register', 'Activity Resource Requirements', 'Project Schedule', 'Activity Cost Estimates', 'Stakeholder Register', 'Procurement Management Plan', 'Procurement Documents'],
+            'Stakeholder': ['Project Charter', 'Project Management Plan', 'Stakeholder Register', 'Stakeholder Engagement Plan', 'Communications Management Plan', 'Issue Log']
+        };
+
+        // ---------- Tools & Techniques ----------
+        const toolsData = {
+            'Integration': ['Expert Judgment', 'Meetings', 'Facilitation Techniques', 'Project Management Information System', 'Analytical Techniques', 'Change Control Tools'],
+            'Scope': ['Expert Judgment', 'Meetings', 'Interviews', 'Focus Groups', 'Facilitated Workshops', 'Group Creativity Techniques', 'Decision-Making Techniques', 'Questionnaires and Surveys', 'Observations', 'Prototypes', 'Benchmarking', 'Brainstorming', 'Nominal Group Technique', 'Decomposition', 'Product Analysis', 'Variance Analysis'],
+            'Schedule': ['Expert Judgment', 'Analytical Techniques', 'Meetings', 'Critical Path Method', 'Critical Chain Method', 'Resource Optimization Techniques', 'Modeling Techniques', 'Leads and Lags', 'Schedule Compression', 'Rolling Wave Planning', 'Precedence Diagramming Method', 'Analogous Estimating', 'Parametric Estimating', 'Three-Point Estimating'],
+            'Cost': ['Expert Judgment', 'Analytical Techniques', 'Meetings', 'Three-Point Estimating', 'Reserve Analysis', 'Cost of Quality', 'Cost Aggregation', 'Historical Relationships', 'Funding Limit Reconciliation', 'Earned Value Management', 'Forecasting'],
+            'Quality': ['Quality Audits', 'Process Analysis', 'Seven Basic Quality Tools', 'Cost-Benefit Analysis', 'Cost of Quality', 'Benchmarking', 'Design of Experiments', 'Statistical Sampling', 'Quality Management and Control Tools'],
+            'Resources': ['Organization Charts', 'Responsibility Assignment Matrix', 'Interpersonal and Team Skills', 'Training', 'Team Building Activities', 'Ground Rules', 'Co-location', 'Recognition and Rewards', 'Performance Assessments'],
+            'Communications': ['Communication Requirements Analysis', 'Communication Models', 'Communication Technology', 'Communication Methods', 'Meetings', 'Information Management Systems', 'Performance Reporting'],
+            'Risk': ['Expert Judgment', 'Meetings', 'Information Gathering Techniques', 'Documentation Reviews', 'Risk Analysis', 'Risk Probability and Impact Assessment', 'Probability and Impact Matrix', 'Decision Tree Analysis', 'Sensitivity Analysis', 'Monte Carlo Simulation', 'Reserve Analysis', 'Risk Audits'],
+            'Procurement': ['Make-or-Buy Analysis', 'Expert Judgment', 'Market Research', 'Meetings', 'Bidder Conferences', 'Proposal Evaluation Techniques', 'Independent Estimates', 'Procurement Negotiations', 'Procurement Audits'],
+            'Stakeholder': ['Expert Judgment', 'Meetings', 'Stakeholder Analysis', 'Power/Interest Grid', 'Stakeholder Engagement Assessment Matrix', 'Communication Methods', 'Interpersonal Skills', 'Management Skills']
+        };
+
+        // ---------- Outputs ----------
+        const outputsData = {
+            'Integration': ['Project Charter', 'Project Management Plan', 'Deliverables', 'Work Performance Data', 'Change Requests', 'Work Performance Reports', 'Final Product Acceptance', 'Organizational Process Assets Updates'],
+            'Scope': ['Scope Management Plan', 'Requirements Management Plan', 'Requirements Documentation', 'Requirements Traceability Matrix', 'Project Scope Statement', 'Scope Baseline', 'Deliverable Acceptance', 'Change Requests'],
+            'Schedule': ['Schedule Management Plan', 'Activity List', 'Activity Attributes', 'Milestone List', 'Project Schedule', 'Schedule Baseline', 'Schedule Data', 'Project Calendars', 'Change Requests'],
+            'Cost': ['Cost Management Plan', 'Activity Cost Estimates', 'Basis of Estimates', 'Cost Baseline', 'Project Funding Requirements', 'Cost Forecasts', 'Change Requests'],
+            'Quality': ['Quality Management Plan', 'Process Improvement Plan', 'Quality Metrics', 'Quality Checklists', 'Quality Reports', 'Change Requests', 'Verified Deliverables'],
+            'Resources': ['Resource Management Plan', 'Project Staff Assignments', 'Resource Calendars', 'Team Performance Assessments', 'Change Requests', 'Project Documents Updates'],
+            'Communications': ['Communications Management Plan', 'Project Communications', 'Project Documents Updates', 'Change Requests'],
+            'Risk': ['Risk Register', 'Risk Report', 'Risk Management Plan', 'Risk Response Plan', 'Change Requests', 'Project Documents Updates'],
+            'Procurement': ['Procurement Management Plan', 'Procurement Documents', 'Selected Sellers', 'Agreements', 'Procurement Closure', 'Change Requests'],
+            'Stakeholder': ['Stakeholder Register', 'Stakeholder Engagement Plan', 'Change Requests', 'Project Documents Updates']
+        };
+
+        // ================================================================
+        //  2. RENDERING FUNCTIONS
+        // ================================================================
+
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
+
+        // ---------- Helper: highlight search term ----------
+        function highlightText(text, term) {
+            if (!term || !text) return text;
+            const idx = text.toLowerCase().indexOf(term.toLowerCase());
+            if (idx === -1) return text;
+            const before = text.substring(0, idx);
+            const match = text.substring(idx, idx + term.length);
+            const after = text.substring(idx + term.length);
+            return before + '<mark>' + match + '</mark>' + after;
+        }
+
+        // ---------- Process Matrix ----------
+        function renderMatrix(filter = '') {
+            const tbody = $('#matrixBody');
+            const knowledgeAreas = Object.keys(processData);
+            const processGroups = ['Initiating', 'Planning', 'Executing', 'Monitoring & Controlling', 'Closing'];
+            let html = '';
+            let total = 0;
+
+            knowledgeAreas.forEach(ka => {
+                const row = processData[ka];
+                html += '<tr>';
+                html += `<td>${ka}</td>`;
+                processGroups.forEach(pg => {
+                    const items = row[pg] || [];
+                    if (items.length === 0) {
+                        html += '<td><span class="empty-cell">—</span></td>';
+                    } else {
+                        const itemHtml = items.map(item => {
+                            total++;
+                            const displayed = filter ? highlightText(item, filter) : item;
+                            return `<span class="proc-item" data-process="${item}">${displayed}</span>`;
+                        }).join(' ');
+                        html += `<td>${itemHtml}</td>`;
+                    }
+                });
+                html += '</tr>';
+            });
+
+            tbody.innerHTML = html;
+            $('#countProcesses').textContent = total;
+
+            // Click to toggle highlight
+            tbody.querySelectorAll('.proc-item').forEach(el => {
+                el.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.toggle('highlight');
+                });
+            });
+        }
+
+        // ---------- Definitions ----------
+        function renderDefinitions(filter = '') {
+            const grid = $('#definitionsGrid');
+            let html = '';
+            let count = 0;
+            definitions.forEach(def => {
+                const match = !filter || def.title.toLowerCase().includes(filter.toLowerCase()) || def.text.toLowerCase().includes(filter.toLowerCase());
+                if (!match) return;
+                count++;
+                const titleDisplay = filter ? highlightText(def.title, filter) : def.title;
+                const textDisplay = filter ? highlightText(def.text, filter) : def.text;
+                html += `
+                    <div class="def-card">
+                        <div class="def-title"><i class="fas ${def.icon}"></i> ${titleDisplay}</div>
+                        <div class="def-body">${textDisplay}</div>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html || `<div class="no-results"><i class="fas fa-search"></i>No matching definitions</div>`;
+            $('#countDefinitions').textContent = count;
+        }
+
+        // ---------- Generic render for Inputs / Tools / Outputs ----------
+        function renderKaGrid(data, containerId, filter = '') {
+            const container = document.getElementById(containerId);
+            const keys = Object.keys(data);
+            let html = '';
+            let total = 0;
+
+            keys.forEach(ka => {
+                const items = data[ka] || [];
+                const filtered = items.filter(it => !filter || it.toLowerCase().includes(filter.toLowerCase()));
+                if (filter && filtered.length === 0) return;
+                total += filtered.length;
+                const kaDisplay = filter ? highlightText(ka, filter) : ka;
+                const itemsHtml = filtered.map(it => {
+                    const display = filter ? highlightText(it, filter) : it;
+                    return `<span class="tag">${display}</span>`;
+                }).join(' ');
+                html += `
+                    <div class="ka-card">
+                        <div class="ka-name"><i class="fas fa-folder-open"></i> ${kaDisplay}</div>
+                        <div class="ka-items">${itemsHtml || '<span class="tag empty-tag">(none)</span>'}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html ||
+                `<div class="no-results"><i class="fas fa-search"></i>No matching items</div>`;
+
+            // Update corresponding count badge
+            const map = {
+                'inputsContainer': 'countInputs',
+                'toolsContainer': 'countTools',
+                'outputsContainer': 'countOutputs'
+            };
+            const countEl = document.getElementById(map[containerId]);
+            if (countEl) countEl.textContent = total;
+        }
+
+        // ---------- Full render ----------
+        function renderAll(filter = '') {
+            renderMatrix(filter);
+            renderDefinitions(filter);
+            renderKaGrid(inputsData, 'inputsContainer', filter);
+            renderKaGrid(toolsData, 'toolsContainer', filter);
+            renderKaGrid(outputsData, 'outputsContainer', filter);
+        }
+
+        // ================================================================
+        //  3. INTERACTION
+        // ================================================================
+
+        // ---------- Tab switching ----------
+        const tabButtons = $$('#tabNav button');
+        const panels = {
+            processes: $('#panelProcesses'),
+            definitions: $('#panelDefinitions'),
+            inputs: $('#panelInputs'),
+            tools: $('#panelTools'),
+            outputs: $('#panelOutputs')
+        };
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                tabButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const tab = this.dataset.tab;
+                Object.keys(panels).forEach(key => {
+                    panels[key].classList.toggle('active', key === tab);
+                });
+                // Re-apply search highlights if any
+                const term = $('#globalSearch').value.trim();
+                if (term) renderAll(term);
+            });
+        });
+
+        // ---------- Search ----------
+        const searchInput = $('#globalSearch');
+        const clearBtn = $('#clearSearch');
+
+        function doSearch() {
+            const term = searchInput.value.trim();
+            clearBtn.classList.toggle('visible', term.length > 0);
+            renderAll(term);
+        }
+
+        searchInput.addEventListener('input', doSearch);
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            doSearch();
+            searchInput.focus();
+        });
+
+        // ---------- Initial render ----------
+        renderAll('');
+
+        console.log('✅ PMP Cheatsheet loaded — Layered Cake Study Sheet (English UI)');
+    </script>
+
+</body>
+</html>
