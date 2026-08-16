@@ -1,0 +1,29 @@
+/* =============================================================================
+ * print.css — Clean, ink-friendly output for study printouts.
+ * ========================================================================== */
+@media print {
+  body { background: #fff; color: #000; padding: 0; }
+  .container { box-shadow: none; border: none; border-radius: 0; }
+  .container__inner { padding: 8px; }
+
+  .app-header { background: #fff; color: #000; padding: 8px 0; border-bottom: 2px solid #000; }
+  .app-header::after { display: none; }
+  .brand__mark { background: #eee; color: #000; border-color: #999; }
+  .brand__subtitle { color: #333; }
+
+  .header-actions,
+  .search-bar,
+  .progress-strip,
+  .panel-toolbar,
+  .overlay,
+  .toast-stack { display: none !important; }
+
+  /* Print every panel so the full sheet is captured on paper. */
+  .tabs { display: none; }
+  .panel { display: block !important; page-break-inside: avoid; margin-bottom: 18px; }
+  .panel::before { content: attr(data-print-title); display: block; font-size: 16px; font-weight: 700; margin: 14px 0 8px; }
+
+  .proc-item, .tag { border: 1px solid #999 !important; background: #fff !important; color: #000 !important; }
+  .def-card, .ka-card, .matrix-wrap { border: 1px solid #999 !important; box-shadow: none !important; break-inside: avoid; }
+  .ka-card__head, .def-card::before { background: #eee !important; color: #000 !important; }
+}

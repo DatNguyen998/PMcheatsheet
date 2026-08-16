@@ -4,8 +4,9 @@ A modern, interactive study dashboard for the **PMBOK® 6th edition** — the
 "layered cake" of 10 knowledge areas × 5 process groups, plus definitions and
 the Inputs / Tools / Outputs for every knowledge area.
 
-Open **[`index.html`](index.html)** in any browser. No build step, no server,
-no dependencies to install — it's a self-contained static app.
+**Content lives in a database, not in code.** The site (Next.js) only reads
+from Supabase; all PM content is added/edited/removed directly in Supabase's
+Studio table editor — no code changes or redeploys needed to update content.
 
 ---
 
@@ -18,7 +19,7 @@ no dependencies to install — it's a self-contained static app.
 - **⭐ Bookmarks** — save any process to Favorites and filter the matrix to just
   those (persisted in your browser).
 - **🎓 Progress tracking** — mark processes as *learned*; a progress ring and bar
-  show how far through the 49 processes you are (persisted).
+  show how far through the processes you are (persisted).
 - **🔎 Detail modal** — click any process to see its knowledge area, process
   group, definition, and the inputs/tools/outputs it draws on.
 - **🧠 Quiz mode** — flashcards that ask which process group a process belongs to,
@@ -38,50 +39,69 @@ no dependencies to install — it's a self-contained static app.
 
 ```
 PMcheatsheet/
-├── index.html                 # App entry point (markup + wiring)
-├── assets/
-│   ├── css/
-│   │   ├── tokens.css          # Design tokens + light/dark palettes
-│   │   ├── base.css            # Reset, typography, header, search
-│   │   ├── components.css      # Tabs, matrix, cards, modal, quiz, toasts
-│   │   └── print.css           # Print styles
-│   └── js/
-│       ├── data.js             # All PMBOK data + knowledge-area metadata
-│       ├── store.js            # localStorage state (theme, bookmarks, progress)
-│       ├── render.js           # Pure rendering functions → HTML
-│       ├── quiz.js             # Flashcard quiz logic
-│       └── app.js              # App shell: state, events, tabs, modal
+├── app/                        # Next.js App Router
+│   ├── layout.tsx               # HTML shell, fonts, theme-init script
+│   ├── page.tsx                 # Fetches content from Supabase, renders <Dashboard>
+├── components/                  # React components (the UI)
+├── lib/
+│   ├── supabase/client.ts        # Read-only Supabase client (anon key)
+│   ├── content.ts                 # Typed fetchers for the 5 content tables
+│   ├── pm-model.ts                # Derives matrix/lookups from raw content
+│   ├── filters.ts                 # Search/filter logic shared by panels
+│   ├── use-local-store.ts         # Theme / bookmarks / progress (localStorage)
+│   └── copy-to-clipboard.ts
+├── styles/                       # tokens · base · components · print (CSS)
+├── supabase/
+│   └── migrations/0001_init.sql  # Database schema + Row Level Security
+├── scripts/
+│   └── seed.ts                    # One-time content loader
 ├── docs/
-│   ├── code-structure-guide.md # How the code is organized
-│   └── design-brainstorm.md    # The design direction & rationale
+│   ├── code-structure-guide.md    # How the code is organized
+│   ├── database-schema.md         # Table reference + how to edit content
+│   └── design-brainstorm.md       # The design direction & rationale
 └── archive/
-    └── fullstack-prototype/    # Incomplete React/tRPC experiment (see note)
+    ├── fullstack-prototype/       # Earlier incomplete React/tRPC experiment
+    └── static-site/               # The previous working static HTML/JS site
 ```
 
-> **Note on `archive/fullstack-prototype/`** — an earlier, incomplete attempt to
-> rebuild this as a React + tRPC + Express app. It references many files that
-> were never committed and does not build. It's kept for reference only; the
-> working product is the static app at the repo root.
+---
+
+## 🚀 Getting started
+
+1. **Database:** create a free project at [supabase.com](https://supabase.com),
+   run [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
+   in its SQL editor, then follow
+   [`docs/database-schema.md`](docs/database-schema.md) to load the starting
+   content with `pnpm seed`.
+2. **Configure:** copy `.env.example` to `.env.local` and fill in your
+   Supabase project URL + anon key.
+3. **Run:**
+   ```bash
+   pnpm install
+   pnpm dev
+   ```
+4. **Edit content:** from then on, add/change/remove processes, definitions,
+   or inputs/tools/outputs directly in Supabase Studio's table editor. The
+   site picks up changes automatically (within about a minute).
 
 ---
 
 ## 🛠️ How It Works
 
-The app is plain HTML/CSS/JS split into small, single-responsibility files.
-Scripts load in order and communicate through a few globals — no bundler
-required, so it runs the same from `file://` or any static host (e.g. GitHub
-Pages).
+`app/page.tsx` is a Server Component that fetches all content from Supabase
+in parallel and hands it to `<Dashboard>`, a client component that owns all
+interactive state (search, tabs, filters) and renders the matrix, cards,
+detail modal, and quiz. Personal state — theme, bookmarks, learned progress —
+stays in the browser's `localStorage`; it's not shared content, so it's not
+in the database.
 
-| Global      | Provided by   | Responsibility                              |
-|-------------|---------------|---------------------------------------------|
-| `PM_DATA`   | `data.js`     | All content + per-area colors/icons         |
-| `PM_STORE`  | `store.js`    | Persistence (theme, bookmarks, progress)    |
-| `PM_RENDER` | `render.js`   | Turn data + state into HTML                  |
-| `PM_QUIZ`   | `quiz.js`     | Quiz question flow                           |
-| —           | `app.js`      | Wires everything together                    |
+Row Level Security on every content table grants **public read only** — the
+app can never write to the database. All content edits happen through
+Supabase Studio, using your own project login.
 
-See **[`docs/code-structure-guide.md`](docs/code-structure-guide.md)** for the
-full walkthrough.
+See **[`docs/code-structure-guide.md`](docs/code-structure-guide.md)** for
+the full walkthrough and **[`docs/database-schema.md`](docs/database-schema.md)**
+for the table reference.
 
 ---
 

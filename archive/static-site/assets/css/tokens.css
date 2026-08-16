@@ -1,0 +1,84 @@
+/* =============================================================================
+ * tokens.css — Design tokens for the "Modern Knowledge Dashboard" theme.
+ * A blue→purple accent system with full light & dark palettes. Colors are
+ * authored in a light default and overridden under [data-theme="dark"].
+ * ========================================================================== */
+
+:root {
+  /* Brand accent (blue→purple gradient endpoints) */
+  --accent: #4f6ef2;
+  --accent-2: #8b5cf6;
+  --accent-soft: rgba(79, 110, 242, 0.12);
+  --accent-ring: rgba(79, 110, 242, 0.35);
+  --gradient: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+
+  /* Surfaces */
+  --bg: #eef2f9;
+  --bg-grad-a: #eaf0fb;
+  --bg-grad-b: #f4eefb;
+  --surface: #ffffff;
+  --surface-2: #f6f8fc;
+  --surface-3: #eef2f8;
+  --surface-glass: rgba(255, 255, 255, 0.72);
+
+  /* Text */
+  --text: #17223a;
+  --text-soft: #45546e;
+  --text-muted: #7b8aa3;
+
+  /* Lines & effects */
+  --border: #e2e8f2;
+  --border-strong: #cdd7e6;
+  --shadow-sm: 0 1px 3px rgba(20, 33, 61, 0.06);
+  --shadow-md: 0 8px 24px rgba(20, 33, 61, 0.08);
+  --shadow-lg: 0 24px 60px rgba(20, 33, 61, 0.16);
+
+  /* Semantic */
+  --success: #17a673;
+  --warn: #e0a325;
+  --star: #f5b301;
+
+  /* Shape & motion */
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 220ms;
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --accent: #7c93ff;
+  --accent-2: #b98bff;
+  --accent-soft: rgba(124, 147, 255, 0.16);
+  --accent-ring: rgba(124, 147, 255, 0.4);
+
+  --bg: #0b1020;
+  --bg-grad-a: #0d1226;
+  --bg-grad-b: #171029;
+  --surface: #141a2e;
+  --surface-2: #1a2137;
+  --surface-3: #212a44;
+  --surface-glass: rgba(20, 26, 46, 0.72);
+
+  --text: #eaf0ff;
+  --text-soft: #b3c0dd;
+  --text-muted: #7f8db0;
+
+  --border: #263049;
+  --border-strong: #33405f;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 24px 70px rgba(0, 0, 0, 0.6);
+
+  --star: #ffca3a;
+
+  color-scheme: dark;
+}
+
+/* Respect users who prefer less motion. */
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur: 0ms; }
+  * { animation-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}

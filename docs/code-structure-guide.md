@@ -1,67 +1,65 @@
 # PM Cheatsheet — Code Structure Guide
 
-A tour of how the interactive static app is put together, so you can find and
-change things quickly.
+A tour of how the Next.js + Supabase app is put together.
 
 ## 📁 Layout
 
 ```
 PMcheatsheet/
-├── index.html            # Markup + script/style includes (the entry point)
-├── assets/
-│   ├── css/
-│   │   ├── tokens.css     # CSS variables: colors, spacing, light/dark themes
-│   │   ├── base.css       # Reset, typography, page shell, header, search
-│   │   ├── components.css # Tabs, matrix, cards, chips, modal, quiz, toasts
-│   │   └── print.css      # Print-only overrides
-│   └── js/
-│       ├── data.js        # PM_DATA  — all content + area metadata
-│       ├── store.js       # PM_STORE — localStorage persistence
-│       ├── render.js      # PM_RENDER — data + state → HTML strings
-│       ├── quiz.js        # PM_QUIZ  — flashcard quiz flow
-│       └── app.js         # boot + state + all event wiring
-└── docs/                  # This guide + the design brainstorm
+├── app/
+│   ├── layout.tsx          # <html> shell: fonts, global CSS, theme-init script
+│   └── page.tsx             # Server Component: fetch content, render <Dashboard>
+├── components/
+│   ├── Dashboard.tsx         # App shell: all interactive state + event wiring
+│   ├── SearchBar.tsx / TabNav.tsx / AreaFilterChips.tsx / ProgressStrip.tsx / ThemeToggle.tsx
+│   ├── ProcessMatrix.tsx / DefinitionsGrid.tsx / ResourceGrid.tsx
+│   ├── Overlay.tsx / DetailModal.tsx / ShortcutsModal.tsx
+│   ├── Quiz.tsx
+│   ├── ToastProvider.tsx
+│   └── Highlight.tsx         # wraps a search match in <mark>
+├── lib/
+│   ├── supabase/client.ts    # read-only Supabase client (anon key)
+│   ├── content.ts             # typed fetchers for the 5 content tables
+│   ├── pm-model.ts            # derives the matrix/lookups from raw content
+│   ├── filters.ts             # search/filter logic shared by the panels
+│   ├── use-local-store.ts     # theme / bookmarks / progress (localStorage)
+│   └── copy-to-clipboard.ts
+├── styles/                   # tokens.css, base.css, components.css, print.css
+├── supabase/migrations/0001_init.sql
+├── scripts/seed.ts
+└── docs/                     # this guide, database-schema.md, design-brainstorm.md
 ```
 
-There is **no build step**. Scripts are classic `<script>` tags loaded in a
-fixed order; each attaches one global to `window`. This keeps the app runnable
-straight from `file://` or any static host.
+There is no custom backend beyond Supabase itself — Next.js Server Components
+call Supabase directly; there's no separate API layer to maintain.
 
 ---
 
-## 🧩 The modules
+## 🧩 The data layer
 
-### `data.js` → `PM_DATA`
-The single source of truth for content. Exposes:
-- `PROCESS_GROUPS` — the 5 groups, in order.
-- `KNOWLEDGE_AREAS` — the 10 areas with a `hue`, `icon`, and short `blurb` used
-  for semantic color-coding across the UI.
-- `processData`, `definitions`, `inputsData`, `toolsData`, `outputsData` — the
-  raw PMBOK content.
-- `allProcesses` — a flat, pre-computed list (`{ id, title, area, group }`) used
-  by search, the detail modal, the quiz, and progress totals.
+### `lib/content.ts` — `getPmContent()`
+The only place the app talks to Supabase. Fetches all 5 tables in parallel
+and returns one typed `PmContent` bundle (camelCased, ready for React). If
+Supabase isn't configured yet (missing env vars), returns an empty,
+`configured: false` bundle instead of throwing, so the app still renders with
+a "not configured" message.
 
-**To edit content**, this is the only file you touch.
+### `lib/pm-model.ts` — `buildPmModel(content)`
+Turns the flat `PmContent` into the shapes components actually want: a
+matrix grouped by knowledge area × process group, a flat list of every
+process (used by search/quiz/detail modal), lookup maps by id, and resource
+items grouped by area + kind.
 
-### `store.js` → `PM_STORE`
-A thin wrapper over `localStorage` (with an in-memory fallback for private mode).
-Handles the theme, the set of bookmarked process ids, and the set of learned
-process ids. Every user action that should survive a refresh goes through here.
+### `lib/filters.ts`
+Pure functions — given the model + current search term/area filter/favorites
+toggle, return exactly what a panel should render plus its result count (for
+the tab badges). Kept separate from `pm-model.ts` because these depend on UI
+state, not just the raw content.
 
-### `render.js` → `PM_RENDER`
-Pure(ish) functions that take data + current filter/state and return HTML
-strings (`renderMatrix`, `renderDefinitions`, `renderKaGrid`, `detailHtml`).
-Also exports `escapeHtml` and `highlight`. **No event listeners live here** — it
-only produces markup.
-
-### `quiz.js` → `PM_QUIZ`
-Owns the "which process group?" flashcard flow: pick a random process, render
-the process-group options, score the answer, advance.
-
-### `app.js`
-The conductor. Holds app state (`tab`, `filter`, `area`, `favoritesOnly`), wires
-every control once, re-renders the active panel on change, and owns the theme,
-progress ring, detail modal, toasts, and keyboard shortcuts.
+### `lib/use-local-store.ts` — `usePmStore()`
+The only client-side persistence in the app: theme, bookmarked process ids,
+and learned process ids, all in `localStorage`. Deliberately not in Supabase
+— it's per-browser state, not shared PM content.
 
 ---
 
@@ -69,34 +67,30 @@ progress ring, detail modal, toasts, and keyboard shortcuts.
 
 **Marking a process as "learned":**
 ```
-Click process chip in the matrix
-   → app.js openDetail(id)            (render.js builds the modal body)
-   → user clicks "Mark as learned"
-   → PM_STORE.toggleLearned(id)       (persists to localStorage)
-   → app.js updateProgress()          (ring + bar recalculated)
-   → app.js renderActive()            (chip now shows the learned state)
+Click a process chip (ProcessMatrix)
+  → Dashboard.setOpenProcessId(id)
+  → <DetailModal> renders (looks up the process via pm-model's lookups)
+  → user clicks "Mark as learned"
+  → usePmStore().toggleLearned(id)   — updates React state + localStorage
+  → ProgressStrip and the chip's "is-learned" class re-render automatically
 ```
 
-**Searching:**
-```
-Type in #globalSearch
-   → app.js updates state.filter
-   → renderActive() re-renders the current panel via PM_RENDER
-   → matches are wrapped in <mark> by PM_RENDER.highlight()
-```
+**Editing content:** there is no code path for this at all by design — content
+changes happen directly in Supabase Studio (see
+[`database-schema.md`](database-schema.md)). The app re-fetches on a ~60s ISR
+window (`export const revalidate = 60` in `app/page.tsx`), so edits show up
+without a redeploy.
 
 ---
 
 ## 🎨 Theming
 
-All colors are CSS variables in `tokens.css`. Light is the default on `:root`;
-`[data-theme="dark"]` overrides them. `app.js` sets that attribute on `<html>`
-based on the saved preference or the OS setting. To retheme the app, you
-generally only edit `tokens.css` — components reference the variables.
-
-Knowledge-area accent colors are derived at render time from each area's `hue`
-(e.g. `hsl(var(--ka-hue) 70% 55%)`), so adding an area only needs a hue in
-`data.js`.
+Unchanged from the previous version: CSS variables in `styles/tokens.css`,
+light by default, overridden under `[data-theme="dark"]`. A small inline
+script in `app/layout.tsx` sets that attribute before first paint (avoids a
+flash of the wrong theme); `usePmStore()` keeps it in sync afterward.
+Knowledge-area accent colors come from each area's `hue` column in Supabase,
+applied via a `--ka-hue` CSS variable set inline per row/card.
 
 ---
 
@@ -104,18 +98,21 @@ Knowledge-area accent colors are derived at render time from each area's `hue`
 
 | Goal | Where |
 |------|-------|
-| Add/edit a process, definition, or ITO item | `assets/js/data.js` |
-| Add a new knowledge area | `data.js` (`KNOWLEDGE_AREAS` + the data maps) |
-| Change colors / dark mode | `assets/css/tokens.css` |
-| Restyle a component | `assets/css/components.css` |
-| Add a new tab/panel | markup in `index.html` + a branch in `app.js renderActive()` |
-| Add a persisted setting | `assets/js/store.js` |
+| Add/edit PM content | **Supabase Studio** — see `docs/database-schema.md` (not this repo) |
+| Add a new knowledge area | Insert a row in `knowledge_areas`, then its processes/ITO items (Supabase) |
+| Change colors / dark mode | `styles/tokens.css` |
+| Restyle a component | `styles/components.css` |
+| Add a new tab/panel | a new `<section className="panel">` in `Dashboard.tsx` + entry in `components/TabNav.tsx` |
+| Add a persisted (per-browser) setting | `lib/use-local-store.ts` |
+| Change how content is fetched/shaped | `lib/content.ts` / `lib/pm-model.ts` |
 
 ---
 
-## 🗄️ The archived prototype
+## 🗄️ The archive
 
-`archive/fullstack-prototype/` holds an earlier, **incomplete** React + tRPC +
-Express rewrite. Its entry (`client/src/app.tsx`) imports components, pages, and
-libs that were never committed, so it does not build. It's retained for
-reference only and is not part of the shipping app.
+- `archive/static-site/` — the previous working vanilla HTML/CSS/JS version
+  of this app (hardcoded content). Retired when content moved to Supabase;
+  still runs standalone if you open its `index.html`.
+- `archive/fullstack-prototype/` — an earlier, **incomplete** React + tRPC +
+  Express rewrite that references files never committed and does not build.
+  Kept for reference only.
