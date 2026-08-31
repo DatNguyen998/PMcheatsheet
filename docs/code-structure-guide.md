@@ -23,6 +23,7 @@ PMcheatsheet/
 │   ├── pm-model.ts            # derives the matrix/lookups from raw content
 │   ├── filters.ts             # search/filter logic shared by the panels
 │   ├── use-local-store.ts     # theme / bookmarks / progress (localStorage)
+│   ├── animations.ts          # anime.js helpers (entrances, stagger, exits)
 │   └── copy-to-clipboard.ts
 ├── styles/                   # tokens.css, base.css, components.css, print.css
 ├── supabase/migrations/0001_init.sql
@@ -94,6 +95,31 @@ applied via a `--ka-hue` CSS variable set inline per row/card.
 
 ---
 
+## 🎬 Animation (anime.js)
+
+`lib/animations.ts` is the one place the app talks to [anime.js](https://animejs.com) —
+every JS-driven effect (panel entrance, staggered card/row entrance, modal &
+toast enter/exit, the progress ring/bar/percentage counting) goes through a
+named helper there (`animatePanelEnter`, `animateStaggerIn`, `animateModalIn`
+/`animateModalOut`, `animateToastIn`/`animateToastOut`, `animateRingOffset`,
+`animateBarWidth`, `animateCounter`), so timing/easing stays consistent and
+`prefers-reduced-motion` is respected in exactly one spot.
+
+Plain CSS still owns cheap, always-on micro-interactions (hover lifts, color/
+border transitions in `styles/components.css`) — anime.js is reserved for
+entrances/exits and anything that benefits from real choreography
+(staggering many elements, animating to a value only known at runtime,
+deferring an unmount until an exit animation finishes).
+
+**The "animate out, then unmount" pattern** (`components/Overlay.tsx`,
+`components/ToastProvider.tsx`): React normally removes an element from the
+DOM the instant its condition goes false, which would cut an exit animation
+short. Both components work around this the same way — keep rendering a
+frozen copy of the content and only flip the state that actually unmounts it
+inside the animation's `onComplete` callback.
+
+---
+
 ## ➕ Common tasks
 
 | Goal | Where |
@@ -101,6 +127,7 @@ applied via a `--ka-hue` CSS variable set inline per row/card.
 | Add/edit PM content | **Supabase Studio** — see `docs/database-schema.md` (not this repo) |
 | Add a new knowledge area | Insert a row in `knowledge_areas`, then its processes/ITO items (Supabase) |
 | Change colors / dark mode | `styles/tokens.css` |
+| Change/add an effect (timing, easing, stagger) | `lib/animations.ts` |
 | Restyle a component | `styles/components.css` |
 | Add a new tab/panel | a new `<section className="panel">` in `Dashboard.tsx` + entry in `components/TabNav.tsx` |
 | Add a persisted (per-browser) setting | `lib/use-local-store.ts` |
