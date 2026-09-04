@@ -1,11 +1,27 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import { animateBarWidth, animateCounter, animateRingOffset } from "@/lib/animations";
+
 const RADIUS = 24;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export function ProgressStrip({ learnedCount, total }: { learnedCount: number; total: number }) {
   const pct = total ? Math.round((learnedCount / total) * 100) : 0;
-  const offset = CIRCUMFERENCE * (1 - pct / 100);
+
+  const ringRef = useRef<SVGCircleElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  const pctTextRef = useRef<SVGTextElement>(null);
+  const prevPctRef = useRef(0);
+
+  useEffect(() => {
+    animateRingOffset(ringRef.current, CIRCUMFERENCE * (1 - pct / 100));
+    animateBarWidth(barRef.current, pct);
+    animateCounter(prevPctRef.current, pct, (value) => {
+      if (pctTextRef.current) pctTextRef.current.textContent = `${value}%`;
+    });
+    prevPctRef.current = pct;
+  }, [pct]);
 
   return (
     <section className="progress-strip" aria-label="Study progress">
@@ -13,6 +29,7 @@ export function ProgressStrip({ learnedCount, total }: { learnedCount: number; t
         <svg width="58" height="58" viewBox="0 0 58 58">
           <circle cx="29" cy="29" r={RADIUS} fill="none" stroke="var(--surface-3)" strokeWidth="6" />
           <circle
+            ref={ringRef}
             cx="29"
             cy="29"
             r={RADIUS}
@@ -21,11 +38,8 @@ export function ProgressStrip({ learnedCount, total }: { learnedCount: number; t
             strokeWidth="6"
             strokeLinecap="round"
             transform="rotate(-90 29 29)"
-            style={{
-              strokeDasharray: CIRCUMFERENCE,
-              strokeDashoffset: offset,
-              transition: "stroke-dashoffset 600ms cubic-bezier(0.22,1,0.36,1)",
-            }}
+            strokeDasharray={CIRCUMFERENCE}
+            strokeDashoffset={CIRCUMFERENCE}
           />
           <defs>
             <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
@@ -33,8 +47,8 @@ export function ProgressStrip({ learnedCount, total }: { learnedCount: number; t
               <stop offset="100%" stopColor="var(--accent-2)" />
             </linearGradient>
           </defs>
-          <text x="29" y="33" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)">
-            {pct}%
+          <text ref={pctTextRef} x="29" y="33" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)">
+            0%
           </text>
         </svg>
       </div>
@@ -44,7 +58,7 @@ export function ProgressStrip({ learnedCount, total }: { learnedCount: number; t
           {learnedCount} / {total} processes learned
         </div>
         <div className="progress-bar">
-          <div className="progress-bar__fill" style={{ width: `${pct}%` }} />
+          <div className="progress-bar__fill" ref={barRef} style={{ width: 0 }} />
         </div>
       </div>
     </section>

@@ -1,11 +1,36 @@
 "use client";
 
-import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { animateToastIn, animateToastOut } from "@/lib/animations";
 
-type ToastItem = { id: number; message: string; icon: string; leaving: boolean };
+type ToastItem = { id: number; message: string; icon: string };
 type ToastFn = (message: string, icon?: string) => void;
 
 const ToastContext = createContext<ToastFn | null>(null);
+const DISPLAY_MS = 2200;
+
+function Toast({ message, icon, onExited }: { message: string; icon: string; onExited: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Synchronous so the toast never paints at full opacity before anime.js sets its "from" state.
+  useLayoutEffect(() => {
+    animateToastIn(ref.current);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => animateToastOut(ref.current, onExited), DISPLAY_MS);
+    return () => clearTimeout(timer);
+    // Fires once per toast instance — onExited is stable enough for this lifetime.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div ref={ref} className="toast">
+      <i className={`fas ${icon}`} aria-hidden="true" />
+      {message}
+    </div>
+  );
+}
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -13,11 +38,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const toast = useCallback<ToastFn>((message, icon = "fa-circle-check") => {
     const id = ++idRef.current;
-    setToasts((prev) => [...prev, { id, message, icon, leaving: false }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, leaving: true } : t)));
-      setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 250);
-    }, 2200);
+    setToasts((prev) => [...prev, { id, message, icon }]);
+  }, []);
+
+  const remove = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   return (
@@ -25,10 +50,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div className="toast-stack" aria-live="polite">
         {toasts.map((t) => (
-          <div key={t.id} className={`toast${t.leaving ? " leaving" : ""}`}>
-            <i className={`fas ${t.icon}`} aria-hidden="true" />
-            {t.message}
-          </div>
+          <Toast key={t.id} message={t.message} icon={t.icon} onExited={() => remove(t.id)} />
         ))}
       </div>
     </ToastContext.Provider>

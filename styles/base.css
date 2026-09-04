@@ -109,11 +109,11 @@ a { color: inherit; }
   height: 8px; border-radius: 999px; background: var(--surface-3);
   overflow: hidden; margin-top: 8px;
 }
+/* Width is animated by anime.js (components/ProgressStrip.tsx), not a CSS transition. */
 .progress-bar__fill {
   height: 100%; width: 0%;
   background: var(--gradient);
   border-radius: 999px;
-  transition: width 600ms var(--ease);
 }
 
 /* ---------- Search ---------- */

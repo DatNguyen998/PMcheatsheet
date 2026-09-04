@@ -5,6 +5,7 @@ import type { PmContent } from "@/lib/content";
 import { buildPmModel } from "@/lib/pm-model";
 import { filterDefinitions, filterMatrix, filterResourceGroups, type AreaFilter } from "@/lib/filters";
 import { usePmStore } from "@/lib/use-local-store";
+import { animatePanelEnter, animateStaggerIn } from "@/lib/animations";
 import { useToast } from "./ToastProvider";
 import { ThemeToggle } from "./ThemeToggle";
 import { ProgressStrip } from "./ProgressStrip";
@@ -18,6 +19,15 @@ import { Quiz } from "./Quiz";
 import { Overlay } from "./Overlay";
 import { DetailModal } from "./DetailModal";
 import { ShortcutsModal } from "./ShortcutsModal";
+
+const STAGGER_SELECTORS: Record<TabId, string> = {
+  processes: ".matrix-table tbody tr",
+  definitions: ".card-grid > *",
+  inputs: ".ka-grid > *",
+  tools: ".ka-grid > *",
+  outputs: ".ka-grid > *",
+  quiz: "",
+};
 
 export function Dashboard({ content }: { content: PmContent }) {
   const model = useMemo(() => buildPmModel(content), [content]);
@@ -57,6 +67,29 @@ export function Dashboard({ content }: { content: PmContent }) {
     tools: filteredTools.count,
     outputs: filteredOutputs.count,
   };
+
+  // Refs to each panel's <section>, used to target anime.js entrance
+  // animations without touching the (unchanged) child components.
+  const panelRefs = useRef<Partial<Record<TabId, HTMLElement>>>({});
+  const setPanelRef = (tab: TabId) => (el: HTMLElement | null) => {
+    if (el) panelRefs.current[tab] = el;
+  };
+
+  // Whole-panel fade+slide whenever the active tab changes.
+  useEffect(() => {
+    animatePanelEnter(panelRefs.current[activeTab] ?? null);
+  }, [activeTab]);
+
+  // Staggered entrance for the active panel's result items, on tab switch
+  // AND on every search/filter change — mirrors the original design brief's
+  // "search results fade-in with stagger" without re-animating hidden panels.
+  useEffect(() => {
+    const selector = STAGGER_SELECTORS[activeTab];
+    if (!selector) return;
+    const items = panelRefs.current[activeTab]?.querySelectorAll(selector);
+    if (items) animateStaggerIn(items);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, filteredMatrix, filteredDefinitions, filteredInputs, filteredTools, filteredOutputs]);
 
   const openProcess = openProcessId !== null ? model.allProcesses.find((p) => p.id === openProcessId) ?? null : null;
   const closeOverlays = () => {
@@ -161,7 +194,11 @@ export function Dashboard({ content }: { content: PmContent }) {
 
           <TabNav active={activeTab} onChange={setActiveTab} counts={counts} />
 
-          <section className={`panel${activeTab === "processes" ? " active" : ""}`} data-print-title="Process Matrix">
+          <section
+            ref={setPanelRef("processes")}
+            className={`panel${activeTab === "processes" ? " active" : ""}`}
+            data-print-title="Process Matrix"
+          >
             <div className="panel-toolbar">
               <AreaFilterChips areas={content.knowledgeAreas} active={areaFilter} onChange={setAreaFilter} />
               <div className="spacer" />
@@ -178,11 +215,19 @@ export function Dashboard({ content }: { content: PmContent }) {
             />
           </section>
 
-          <section className={`panel${activeTab === "definitions" ? " active" : ""}`} data-print-title="Definitions">
+          <section
+            ref={setPanelRef("definitions")}
+            className={`panel${activeTab === "definitions" ? " active" : ""}`}
+            data-print-title="Definitions"
+          >
             <DefinitionsGrid definitions={filteredDefinitions} filter={filter} />
           </section>
 
-          <section className={`panel${activeTab === "inputs" ? " active" : ""}`} data-print-title="Inputs">
+          <section
+            ref={setPanelRef("inputs")}
+            className={`panel${activeTab === "inputs" ? " active" : ""}`}
+            data-print-title="Inputs"
+          >
             <div className="panel-toolbar">
               <AreaFilterChips areas={content.knowledgeAreas} active={areaFilter} onChange={setAreaFilter} />
               <span className="hint">
@@ -192,7 +237,11 @@ export function Dashboard({ content }: { content: PmContent }) {
             <ResourceGrid groups={filteredInputs} filter={filter} />
           </section>
 
-          <section className={`panel${activeTab === "tools" ? " active" : ""}`} data-print-title="Tools & Techniques">
+          <section
+            ref={setPanelRef("tools")}
+            className={`panel${activeTab === "tools" ? " active" : ""}`}
+            data-print-title="Tools & Techniques"
+          >
             <div className="panel-toolbar">
               <AreaFilterChips areas={content.knowledgeAreas} active={areaFilter} onChange={setAreaFilter} />
               <span className="hint">
@@ -202,7 +251,11 @@ export function Dashboard({ content }: { content: PmContent }) {
             <ResourceGrid groups={filteredTools} filter={filter} />
           </section>
 
-          <section className={`panel${activeTab === "outputs" ? " active" : ""}`} data-print-title="Outputs">
+          <section
+            ref={setPanelRef("outputs")}
+            className={`panel${activeTab === "outputs" ? " active" : ""}`}
+            data-print-title="Outputs"
+          >
             <div className="panel-toolbar">
               <AreaFilterChips areas={content.knowledgeAreas} active={areaFilter} onChange={setAreaFilter} />
               <span className="hint">
@@ -212,14 +265,18 @@ export function Dashboard({ content }: { content: PmContent }) {
             <ResourceGrid groups={filteredOutputs} filter={filter} />
           </section>
 
-          <section className={`panel${activeTab === "quiz" ? " active" : ""}`} data-print-title="Quiz">
+          <section
+            ref={setPanelRef("quiz")}
+            className={`panel${activeTab === "quiz" ? " active" : ""}`}
+            data-print-title="Quiz"
+          >
             <Quiz allProcesses={model.allProcesses} processGroups={content.processGroups} />
           </section>
         </div>
       </div>
 
-      {openProcess && (
-        <Overlay onClose={closeOverlays}>
+      <Overlay open={openProcessId !== null} onClose={closeOverlays}>
+        {openProcess && (
           <DetailModal
             process={openProcess}
             model={model}
@@ -236,14 +293,12 @@ export function Dashboard({ content }: { content: PmContent }) {
             }}
             onClose={closeOverlays}
           />
-        </Overlay>
-      )}
+        )}
+      </Overlay>
 
-      {helpOpen && (
-        <Overlay onClose={closeOverlays}>
-          <ShortcutsModal onClose={closeOverlays} />
-        </Overlay>
-      )}
+      <Overlay open={helpOpen} onClose={closeOverlays}>
+        <ShortcutsModal onClose={closeOverlays} />
+      </Overlay>
     </>
   );
 }

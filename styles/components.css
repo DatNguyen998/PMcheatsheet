@@ -31,12 +31,11 @@
 .tab.active .tab__count { background: rgba(255,255,255,0.25); color: #fff; }
 
 /* ---------- Panels ---------- */
+/* Entrance is driven by anime.js (lib/animations.ts, triggered on tab change
+   in Dashboard.tsx) rather than a CSS keyframe, so it can be choreographed
+   (staggered grid children) instead of a flat fade. */
 .panel { display: none; }
-.panel.active { display: block; animation: fadeUp var(--dur) var(--ease); }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.panel.active { display: block; }
 
 .panel-toolbar {
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
@@ -151,20 +150,19 @@
 .no-results i { font-size: 40px; color: var(--border-strong); margin-bottom: 12px; display: block; }
 
 /* ---------- Detail modal ---------- */
+/* Overlay/.modal only exist in the DOM while open (see components/Overlay.tsx),
+   and their enter/exit is driven by anime.js — no CSS keyframe needed here. */
 .overlay {
   position: fixed; inset: 0; z-index: 50;
-  display: none; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   background: rgba(9, 14, 28, 0.55); backdrop-filter: blur(4px);
   padding: 20px;
 }
-.overlay.open { display: flex; animation: fadeUp 160ms var(--ease); }
 .modal {
   width: min(560px, 100%); max-height: 88vh; overflow-y: auto;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
-  animation: pop var(--dur) var(--ease);
 }
-@keyframes pop { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .modal__head {
   padding: 20px 22px; color: #fff;
   background: linear-gradient(135deg, hsl(var(--ka-hue) 68% 50%), hsl(calc(var(--ka-hue) + 30) 62% 55%));
@@ -235,16 +233,14 @@
   z-index: 80; display: flex; flex-direction: column; gap: 10px; align-items: center;
   pointer-events: none;
 }
+/* Enter/exit is driven by anime.js (see components/ToastProvider.tsx). */
 .toast {
   display: inline-flex; align-items: center; gap: 10px;
   background: var(--text); color: var(--surface);
   padding: 11px 18px; border-radius: 999px; font-size: 13.5px; font-weight: 600;
   box-shadow: var(--shadow-lg);
-  animation: toastIn var(--dur) var(--ease);
 }
 .toast i { color: var(--accent-2); }
-.toast.leaving { opacity: 0; transform: translateY(10px); transition: opacity 250ms var(--ease), transform 250ms var(--ease); }
-@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ---------- Shortcuts help ---------- */
 .shortcuts { display: grid; gap: 10px; }
